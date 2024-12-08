@@ -17,10 +17,12 @@ export class MouseGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket) {
     client.emit('allMousePositions', this.mouseService.getPositions());
+    client.emit('allPoints', this.mouseService.getPoints());
+    client.emit('ranking', this.mouseService.getRanking());
   }
 
   handleDisconnect(client: Socket) {
-    // TODO implements disconnect
+    // Optionally handle disconnection
   }
 
   @SubscribeMessage('setName')
@@ -35,5 +37,7 @@ export class MouseGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .getPositions()
       .find((pos) => pos.sessionId === client.id);
     client.broadcast.emit('mouseMove', position);
+    this.server.emit('allPoints', this.mouseService.getPoints());
+    this.server.emit('ranking', this.mouseService.getRanking());
   }
 }

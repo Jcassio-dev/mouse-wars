@@ -12,17 +12,14 @@ interface MousePosition {
 interface Point {
   x: number;
   y: number;
+  color: string;
+  sessionId: string;
 }
 
 @Injectable()
 export class MouseService {
   private positions: MousePosition[] = [];
   private points: Point[] = [];
-  private readonly pointCount = 10;
-
-  constructor() {
-    this.generatePoints();
-  }
 
   private generateColor(): string {
     const letters = '0123456789ABCDEF';
@@ -33,14 +30,13 @@ export class MouseService {
     return color;
   }
 
-  private generatePoints() {
-    this.points = [];
-    for (let i = 0; i < this.pointCount; i++) {
-      this.points.push({
-        x: Math.floor(Math.random() * 800),
-        y: Math.floor(Math.random() * 600),
-      });
-    }
+  private generatePoint(sessionId: string, color: string) {
+    return {
+      x: Math.floor(Math.random() * 800),
+      y: Math.floor(Math.random() * 600),
+      color,
+      sessionId,
+    };
   }
 
   setName(sessionId: string, name: string) {
@@ -52,6 +48,7 @@ export class MouseService {
     } else {
       const color = this.generateColor();
       this.positions.push({ sessionId, x: 0, y: 0, color, name, points: 0 });
+      this.points.push(this.generatePoint(sessionId, color));
     }
   }
 
@@ -59,29 +56,42 @@ export class MouseService {
     const index = this.positions.findIndex(
       (pos) => pos.sessionId === sessionId,
     );
+
+    console.log('updatePosition', sessionId, x, y, this.points);
     if (index !== -1) {
       this.positions[index] = { ...this.positions[index], x, y };
       this.checkPointCollision(this.positions[index]);
     } else {
       const color = this.generateColor();
       this.positions.push({ sessionId, x, y, color, name: '', points: 0 });
+      this.points.push(this.generatePoint(sessionId, color));
     }
   }
 
   private checkPointCollision(position: MousePosition) {
+    let pointCollected = false;
+
     this.points = this.points.filter((point) => {
       const distance = Math.sqrt(
         (point.x - position.x) ** 2 + (point.y - position.y) ** 2,
       );
-      if (distance < 10) {
+      if (distance < 10 && point.sessionId === position.sessionId) {
         position.points += 1;
+        pointCollected = true;
         return false;
       }
+
       return true;
     });
 
-    if (this.points.length < this.pointCount) {
-      this.generatePoints();
+    if (pointCollected) {
+      const newPoint = this.generatePoint(position.sessionId, position.color);
+      this.points.map((point) => {
+        point.x = Math.floor(Math.random() * 800);
+        point.y = Math.floor(Math.random() * 600);
+        return point;
+      });
+      this.points.push(newPoint);
     }
   }
 

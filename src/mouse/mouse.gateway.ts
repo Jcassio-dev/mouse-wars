@@ -21,9 +21,7 @@ export class MouseGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('ranking', this.mouseService.getRanking());
   }
 
-  handleDisconnect(client: Socket) {
-    // Optionally handle disconnection
-  }
+  handleDisconnect(client: Socket) {}
 
   @SubscribeMessage('setName')
   handleSetName(client: Socket, name: string): void {

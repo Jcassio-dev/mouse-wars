@@ -70,6 +70,10 @@ export class MouseService {
 
   private checkPointCollision(position: MousePosition) {
     let pointCollected = false;
+    let falsePointCollected = {
+      color: '',
+      sessionId: '',
+    };
 
     this.points = this.points.filter((point) => {
       const distance = Math.sqrt(
@@ -81,8 +85,26 @@ export class MouseService {
         return false;
       }
 
+      if (distance < 10 && point.sessionId !== position.sessionId) {
+        position.points -= 1;
+        falsePointCollected = {
+          color: point.color,
+          sessionId: point.sessionId,
+        };
+        return false;
+      }
+
       return true;
     });
+
+    if (falsePointCollected.color) {
+      const newPoint = this.generatePoint(
+        falsePointCollected.sessionId,
+        falsePointCollected.color,
+      );
+
+      this.points.push(newPoint);
+    }
 
     if (pointCollected) {
       const newPoint = this.generatePoint(position.sessionId, position.color);
